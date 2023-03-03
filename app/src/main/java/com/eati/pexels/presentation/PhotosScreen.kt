@@ -15,30 +15,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.eati.pexels.domain.Photo
-import kotlinx.coroutines.launch
-
 
 @Composable
 fun PhotosScreen(viewModel: PhotosViewModel) {
     val result by viewModel.photosFlow.collectAsState()
-    var textoDeBusqueda by remember { mutableStateOf("") }
-    var botonApretado by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
+    var pressedButton by remember { mutableStateOf(false) }
 
-    Column() {
-        BarraDeBusqueda(botonApretado, { botonApretado = true}, textoDeBusqueda, onValueChange = { textoDeBusqueda = it },)
-        if (botonApretado)
-            Photos(textoDeBusqueda, result, viewModel::updateResults)
+    Column {
+        SearchBar({ pressedButton = !pressedButton}, searchText, { searchText = ""}, onValueChange = { searchText = it })
+        if (pressedButton){
+            Photos(searchText, result, viewModel::updateResults)
+        }
     }
 
-
-
-}
-
-fun changueButton(estado: Boolean) {
 }
 
 @Composable
-fun BarraDeBusqueda(botonApretado: Boolean, funcionBoton: () -> Unit, textoDeBusqueda: String , onValueChange: (String) -> Unit) {
+fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () -> Unit, onValueChange: (String) -> Unit) {
+
+    var buttonText by remember { mutableStateOf("Search") }
 
     Column(
         modifier = Modifier
@@ -52,7 +48,7 @@ fun BarraDeBusqueda(botonApretado: Boolean, funcionBoton: () -> Unit, textoDeBus
         ) {
             
             TextField(
-                value = textoDeBusqueda,
+                value = searchText,
                 placeholder = {
                     Text(text = "Search")
                 },
@@ -61,7 +57,13 @@ fun BarraDeBusqueda(botonApretado: Boolean, funcionBoton: () -> Unit, textoDeBus
 
             Button(
                 onClick = {
-                    funcionBoton()
+                    buttonActivation()
+                    if (buttonText == "Reset"){
+                        buttonText = "Search"
+                        resetText()
+                    }
+                    else
+                        buttonText = "Reset"
                 },
                 modifier = Modifier
                     .fillMaxHeight()
@@ -73,7 +75,7 @@ fun BarraDeBusqueda(botonApretado: Boolean, funcionBoton: () -> Unit, textoDeBus
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Text(
-                    text = "Search",
+                    buttonText,
                     textAlign = TextAlign.Start,
                 )
             }
@@ -120,18 +122,17 @@ fun ImageInformation(photo: Photo) {
     )
 }
 @Composable
-fun Photos(textoDeBusqueda: String, results: List<Photo>, updateResults: (String) -> Unit) {
+fun Photos(searchText: String, results: List<Photo>, updateResults: (String) -> Unit) {
 
         LaunchedEffect(Unit) {
-            updateResults(textoDeBusqueda)
+            updateResults(searchText)
         }
 
         Column(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.Center
         ) {
-            LazyColumn(
-            ) {
+            LazyColumn {
                 items(results) { item ->
                     PhotoCard(item)
                 }
@@ -139,6 +140,4 @@ fun Photos(textoDeBusqueda: String, results: List<Photo>, updateResults: (String
         }
 
         Text(text = results.toString())
-
-
 }
