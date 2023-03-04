@@ -1,5 +1,6 @@
 package com.eati.pexels.presentation
 
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -23,6 +24,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+
 
 @Composable
 fun PhotosScreen(viewModel: PhotosViewModel) {
@@ -36,13 +41,20 @@ fun PhotosScreen(viewModel: PhotosViewModel) {
             Photos(searchText, result, viewModel::updateResults)
         }
     }
-
 }
 
 @Composable
 fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () -> Unit, onValueChange: (String) -> Unit) {
 
     var buttonText by remember { mutableStateOf("Search") }
+
+   Text(text = "Android App",
+        textAlign = TextAlign.Center,
+        fontSize = 40.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.White,
+        modifier = Modifier.padding(start = 80.dp, bottom = 20.dp, top = 20.dp))
+
 
     Column(
         modifier = Modifier
@@ -54,13 +66,15 @@ fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () ->
                 .fillMaxWidth()
                 .fillMaxHeight(0.6f)
         ) {
-            
             TextField(
                 value = searchText,
                 placeholder = {
                     Text(text = "Search")
                 },
                 onValueChange = onValueChange,
+                modifier = Modifier
+                    .size(260.dp, 120.dp)
+                    .padding(start = 8.dp)
             )
 
             Button(
@@ -76,6 +90,7 @@ fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () ->
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth()
+                    .padding(end = 8.dp)
             ) {
                 Icon(
                     Icons.Filled.Search,
@@ -113,9 +128,10 @@ fun PhotoCard(photo: Photo, modifier: Modifier = Modifier) {
             onDismissRequest = { showDialog = false },
             title = { Text(text = "Photographer: "+photo.photographer, Modifier.padding(8.dp)) },
             text = {
-                Column (Modifier
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxWidth(),
+                Column (
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally)
                 {
                     Box(modifier = Modifier) {
