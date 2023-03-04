@@ -1,8 +1,9 @@
 package com.eati.pexels.presentation
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -10,11 +11,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.eati.pexels.domain.Photo
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun PhotosScreen(viewModel: PhotosViewModel) {
@@ -84,30 +92,51 @@ fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () ->
 }
 
 @Composable
-fun PhotoCard(photo: Photo) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        Text(
-            text = "",
-            style = MaterialTheme.typography.h3,
-            modifier = Modifier.paddingFromBaseline(
-                top = 24.dp, bottom = 8.dp
-            )
-        )
-        AsyncImage(
-            model = photo.sourceURL,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+fun PhotoCard(photo: Photo, modifier: Modifier = Modifier) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    AsyncImage(
+        model = photo.sourceURL,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .size(128.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { showDialog = true }
+    )
+
+    if (showDialog) {
+
+        AlertDialog(
             modifier = Modifier
-                .size(128.dp)
+                .size(600.dp),
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Photographer: "+photo.photographer, Modifier.padding(8.dp)) },
+            text = {
+                Column (Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally)
+                {
+                    Box(modifier = Modifier) {
+                        AsyncImage(
+                            model = photo.sourceURL,
+                            contentDescription = null,
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxSize(1f)
+                                .padding(16.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text(text = "Close")
+                }
+            }
         )
-
-        ImageInformation(photo)
-
     }
 }
 
@@ -128,16 +157,14 @@ fun Photos(searchText: String, results: List<Photo>, updateResults: (String) -> 
             updateResults(searchText)
         }
 
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.Center
-        ) {
-            LazyColumn {
-                items(results) { item ->
-                    PhotoCard(item)
-                }
+        LazyVerticalGrid (
+            columns = GridCells.Fixed(3),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ){
+            items(results) { item ->
+                PhotoCard(item)
             }
         }
-
-        Text(text = results.toString())
 }
