@@ -36,7 +36,7 @@ fun PhotosScreen(viewModel: PhotosViewModel) {
     var pressedButton by remember { mutableStateOf(false) }
 
     Column {
-        SearchBar({ pressedButton = !pressedButton}, searchText, { searchText = ""}, onValueChange = { searchText = it })
+        Header({ pressedButton = !pressedButton}, searchText, { searchText = ""}, onValueChange = { searchText = it })
         if (pressedButton){
             Photos(searchText, result, viewModel::updateResults)
         }
@@ -44,15 +44,9 @@ fun PhotosScreen(viewModel: PhotosViewModel) {
 }
 
 @Composable
-fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () -> Unit, onValueChange: (String) -> Unit) {
-    var buttonText by remember { mutableStateOf("Search") }
+fun Header(buttonActivation: () -> Unit, searchText: String, resetText: () -> Unit, onValueChange: (String) -> Unit) {
 
-    Text(text = "EATI Pexels",
-        textAlign = TextAlign.Start,
-        fontSize = 40.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.White,
-        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp, top = 10.dp))
+    Title()
 
     Column(
         modifier = Modifier
@@ -64,50 +58,68 @@ fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () ->
                 .fillMaxWidth()
                 .fillMaxHeight(0.7f)
         ) {
-            TextField(
-                value = searchText,
-                placeholder = {
-                    Text(text = "What do you want to see?")
-                },
-                onValueChange = onValueChange,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = MaterialTheme.colors.surface
-                ),
-                modifier = Modifier
-                    .heightIn(min = 56.dp)
-                    .padding(start = 10.dp)
-                    .padding(end = 10.dp)
-                    .clip(shape = RoundedCornerShape(8.dp))
-            )
-
-            Button(
-                onClick = {
-                    buttonActivation()
-                    if (buttonText == "Reset"){
-                        buttonText = "Search"
-                        resetText()
-                    }
-                    else
-                        buttonText = "Reset"
-                },
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-                    .padding(end = 10.dp)
-                    .clip(shape = RoundedCornerShape(8.dp))
-            ) {
-                Icon(
-                    Icons.Filled.Search,
-                    contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                )
-                Text(
-                    buttonText,
-                    textAlign = TextAlign.Start,
-                )
-            }
+            SearchBar(buttonActivation, searchText, resetText, onValueChange)
         }
     }
+}
+
+@Composable
+private fun SearchBar(buttonActivation: () -> Unit, searchText: String, resetText: () -> Unit, onValueChange: (String) -> Unit) {
+    var buttonText by remember { mutableStateOf("Search") }
+
+    TextField(
+        value = searchText,
+        placeholder = {
+            Text(text = "What do you want to see?")
+        },
+        onValueChange = onValueChange,
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = MaterialTheme.colors.surface
+        ),
+        modifier = Modifier
+            .heightIn(min = 56.dp)
+            .padding(start = 10.dp)
+            .padding(end = 10.dp)
+            .clip(shape = RoundedCornerShape(8.dp))
+    )
+
+    Button(
+        onClick = {
+            buttonActivation()
+            if (buttonText == "Reset"){
+                buttonText = "Search"
+                resetText()
+            }
+            else
+                buttonText = "Reset"
+        },
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth()
+            .padding(end = 10.dp)
+            .clip(shape = RoundedCornerShape(8.dp))
+    ) {
+        Icon(
+            Icons.Filled.Search,
+            contentDescription = null,
+            modifier = Modifier.size(ButtonDefaults.IconSize)
+        )
+        Text(
+            buttonText,
+            textAlign = TextAlign.Start,
+        )
+    }
+}
+
+@Composable
+private fun Title() {
+    Text(text = "EATI Pexels",
+        textAlign = TextAlign.Start,
+        fontSize = 40.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.White,
+        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp, top = 10.dp))
+
 }
 
 fun Modifier.customAlertDialog(
@@ -118,9 +130,8 @@ fun Modifier.customAlertDialog(
         .widthIn(max = photo.width.dp)
 )
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun PhotoCard(photo: Photo, photoHeight: Int, photoWidth: Int, modifier: Modifier = Modifier) {
+fun PhotoCard(photo: Photo, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
 
     AsyncImage(
@@ -134,75 +145,91 @@ fun PhotoCard(photo: Photo, photoHeight: Int, photoWidth: Int, modifier: Modifie
     )
 
     if (showDialog) {
-        AlertDialog(
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-            modifier = Modifier.customAlertDialog(photo),
-            onDismissRequest = { showDialog = false },
-            title = { Text(
-                text = ("Photographer: "+photo.photographer),
-                fontSize = 25.sp,
-                style = MaterialTheme.typography.h3,
-                modifier = Modifier
-                    .padding(8.dp)) },
-            text = {
-                Column (
-                    Modifier
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally)
-                {
-                    Box(
-                        modifier = Modifier
-                    ) {
-                        Column {
-                            AsyncImage(
-                                model = photo.sourceURL,
-                                contentDescription = null,
-                                contentScale = ContentScale.FillWidth,
-                                modifier = Modifier
-                                    .fillMaxSize(1f)
-                                    .padding(bottom = 20.dp, top = 10.dp)
-                            )
-                            Row {
-                                Icon(
-                                    Icons.Filled.Favorite,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .padding(start = 10.dp)
-                                )
-                                Icon(
-                                    Icons.Filled.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .padding(start = 10.dp)
-                                )
-                                Icon(
-                                    Icons.Filled.Place,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .padding(start = 10.dp)
-                                )
-                                Icon(
-                                    Icons.Filled.Share,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .padding(start = 10.dp)
-                                )
-                            }
+        ShowAlertDialog(photo) { showDialog = false }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun ShowAlertDialog(photo: Photo, closeAlertDialog: () -> Unit) {
+    AlertDialog(
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        modifier = Modifier.customAlertDialog(photo),
+        onDismissRequest = closeAlertDialog,
+        title = { Text(
+            text = ("Photographer: "+photo.photographer),
+            fontSize = 25.sp,
+            style = MaterialTheme.typography.h3,
+            modifier = Modifier
+                .padding(top = 8.dp)
+        ) },
+        text = {
+            Column (
+                Modifier
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally)
+            {
+                Box(
+                    modifier = Modifier
+                ) {
+                    Column {
+                        AsyncImage(
+                            model = photo.sourceURL,
+                            contentDescription = null,
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxSize(1f)
+                                .padding(bottom = 10.dp)
+                        )
+                        Row {
+                            SocialButtons()
                         }
                     }
                 }
-            },
-            confirmButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text(text = "Close")
-                }
             }
-        )
-    }
+        },
+        confirmButton = {
+            Button(
+                onClick = closeAlertDialog,
+                modifier = Modifier
+                    .padding(end = 20.dp, bottom = 10.dp)
+            ) {
+                Text(text = "Close")
+            }
+        }
+    )
+}
+
+@Composable
+private fun SocialButtons() {
+    Icon(
+        Icons.Filled.Favorite,
+        contentDescription = null,
+        modifier = Modifier
+            .size(40.dp)
+            .padding(start = 10.dp)
+    )
+    Icon(
+        Icons.Filled.Person,
+        contentDescription = null,
+        modifier = Modifier
+            .size(40.dp)
+            .padding(start = 10.dp)
+    )
+    Icon(
+        Icons.Filled.Place,
+        contentDescription = null,
+                modifier = Modifier
+            .size(40.dp)
+            .padding(start = 10.dp)
+    )
+    Icon(
+        Icons.Filled.Share,
+        contentDescription = null,
+        modifier = Modifier
+            .size(40.dp)
+            .padding(start = 10.dp)
+    )
 }
 
 @Composable
@@ -219,7 +246,7 @@ fun Photos(searchText: String, results: List<Photo>, updateResults: (String) -> 
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ){
             items(results) { item ->
-                PhotoCard(item, item.height, item.width)
+                PhotoCard(item)
             }
         }
 }
